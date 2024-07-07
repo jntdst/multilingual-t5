@@ -129,7 +129,7 @@ XNLI_LANGS = [
 ]
 
 
-def create_xnli_tasks_and_mixtures(task_prefix, task_suffix, output_features):
+def create_xnli_tasks_and_mixtures(task_prefix, task_suffix, output_features, myXNLI_LANGS = XNLI_LANGS):
   """Helper function to create XNLI tasks and mixtures."""
   if task_suffix:
     task_suffix = "_" + task_suffix
@@ -145,7 +145,7 @@ def create_xnli_tasks_and_mixtures(task_prefix, task_suffix, output_features):
       ],
       output_features=output_features,
       metric_fns=[metrics.accuracy])
-  for xnli_lang in XNLI_LANGS:
+  for xnli_lang in myXNLI_LANGS:
     seqio.TaskRegistry.add(
         f"{task_prefix}xnli_dev_test{task_suffix}.{xnli_lang}",
         source=seqio.TfdsDataSource(
@@ -180,7 +180,7 @@ def create_xnli_tasks_and_mixtures(task_prefix, task_suffix, output_features):
           tfds_name="xnli:1.1.0", splits=["validation", "test"]),
       preprocessors=[
           functools.partial(
-              preprocessors.process_xnli, target_languages=XNLI_LANGS),
+              preprocessors.process_xnli, target_languages=myXNLI_LANGS),
           seqio.preprocessors.tokenize,
           seqio.CacheDatasetPlaceholder(),
           seqio.preprocessors.append_eos_after_trim,
@@ -191,7 +191,7 @@ def create_xnli_tasks_and_mixtures(task_prefix, task_suffix, output_features):
       f"{task_prefix}xnli_train{task_suffix}",
       f"{task_prefix}xnli_dev_test{task_suffix}.all_langs"
   ] + [
-      f"{task_prefix}xnli_dev_test{task_suffix}.{lang}" for lang in XNLI_LANGS
+      f"{task_prefix}xnli_dev_test{task_suffix}.{lang}" for lang in myXNLI_LANGS
   ])
   seqio.MixtureRegistry.add(
       f"{task_prefix}xnli_zeroshot{task_suffix}",
@@ -199,7 +199,7 @@ def create_xnli_tasks_and_mixtures(task_prefix, task_suffix, output_features):
       default_rate=1.0)
   xnli_translate_train = xnli_zeroshot + [
       f"{task_prefix}xnli_translate_train{task_suffix}.{lang}"
-      for lang in XNLI_LANGS
+      for lang in myXNLI_LANGS
       if lang != "en"
   ]
   seqio.MixtureRegistry.add(
